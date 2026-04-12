@@ -48,7 +48,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  call_ui_kit: 0.1.0
+  call_ui_kit: 0.2.0
 ```
 
 ## Quick Start
@@ -194,7 +194,7 @@ The main widget. All UI is driven by the parameters you pass — the kit does no
 | `isHandRaised` | `bool` | `false` | Local hand raised state |
 | `showEncryptionLabel` | `bool` | `true` | Show encryption label in "more" sheet |
 | `theme` | `CallTheme` | `CallTheme.whatsApp()` | Color theme |
-| `strings` | `CallStrings?` | `CallStrings.english()` | Localized strings |
+| `strings` | `CallStrings?` | `null` (English defaults) | Localized strings |
 | `callStatusText` | `String?` | `null` | Status text override (e.g. "02:45") |
 
 #### Optional Callbacks
@@ -398,7 +398,7 @@ These widgets are exported for standalone use if needed:
 
 ## Requirements
 
-- Flutter SDK >= 1.17.0
+- Flutter SDK >= 3.29.0
 - Dart SDK >= 3.11.3
 
 ## License
