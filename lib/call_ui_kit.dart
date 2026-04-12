@@ -1,0 +1,29 @@
+/// A universal call UI kit for Flutter.
+///
+/// Provides a single [CallScreen] widget that handles personal audio calls,
+/// personal video calls, and group video calls. Fully customizable through
+/// [CallTheme] and [CallStrings].
+library;
+
+// Models
+export 'src/models/call_participant.dart';
+export 'src/models/call_type.dart';
+export 'src/models/call_strings.dart';
+export 'src/models/call_theme.dart';
+
+// Screens
+export 'src/screens/call_screen.dart';
+
+// Widgets
+export 'src/widgets/call_avatar.dart';
+export 'src/widgets/participant_tile.dart';
+export 'src/widgets/floating_pip_view.dart';
+export 'src/widgets/speaking_indicator.dart';
+export 'src/widgets/screen_share_banner.dart';
+export 'src/widgets/more_bottom_sheet.dart';
+export 'src/widgets/participants_panel.dart';
+export 'src/widgets/signal_strength_icon.dart';
+
+// Utils
+export 'src/utils/group_call_layout_resolver.dart';
+export 'src/utils/pip_snap_calculator.dart';
