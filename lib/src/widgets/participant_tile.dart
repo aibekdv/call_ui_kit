@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../models/call_participant.dart';
 import '../models/call_strings.dart';
 import '../models/call_theme.dart';
+import '../models/call_type.dart';
 import 'call_avatar.dart';
 import 'signal_strength_icon.dart';
 import 'speaking_indicator.dart';
@@ -19,7 +20,7 @@ import 'speaking_indicator.dart';
 /// Overlays include a bottom gradient with name + speaking indicator,
 /// mute icon, signal strength, screen-share badge, and an animated
 /// speaking border.
-class ParticipantTile extends StatefulWidget {
+class ParticipantTile extends StatelessWidget {
   /// The participant whose data drives this tile.
   final CallParticipant participant;
 
@@ -42,64 +43,13 @@ class ParticipantTile extends StatefulWidget {
   });
 
   @override
-  State<ParticipantTile> createState() => _ParticipantTileState();
-}
-
-class _ParticipantTileState extends State<ParticipantTile>
-    with SingleTickerProviderStateMixin {
-  AnimationController? _speakingController;
-  Animation<double>? _speakingOpacity;
-
-  void _ensureSpeakingController() {
-    if (_speakingController != null) return;
-    _speakingController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _speakingOpacity = Tween<double>(begin: 0.6, end: 1.0).animate(
-      CurvedAnimation(parent: _speakingController!, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.participant.isSpeaking) {
-      _ensureSpeakingController();
-      _speakingController!.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant ParticipantTile oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.participant.isSpeaking) {
-      _ensureSpeakingController();
-      if (!_speakingController!.isAnimating) {
-        _speakingController!.repeat(reverse: true);
-      }
-    } else if (_speakingController != null &&
-        _speakingController!.isAnimating) {
-      _speakingController!.stop();
-      _speakingController!.value = 0.0;
-    }
-  }
-
-  @override
-  void dispose() {
-    _speakingController?.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final p = widget.participant;
-    final theme = widget.theme;
+    final p = participant;
     final showVideo = p.videoWidget != null && !p.isCameraOff;
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: widget.onTap,
+        onTap: onTap,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -109,14 +59,20 @@ class _ParticipantTileState extends State<ParticipantTile>
                 child: RepaintBoundary(child: p.videoWidget!),
               )
             else
-              Container(
+              ColoredBox(
                 color: theme.barBackground,
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildAvatar(p),
+                      CallAvatar(
+                        displayName: p.displayName,
+                        avatarUrl: p.avatarUrl,
+                        radius: 24,
+                        theme: theme,
+                        id: p.id,
+                      ),
                       const SizedBox(height: 6),
                       Text(
                         p.displayName,
@@ -136,19 +92,17 @@ class _ParticipantTileState extends State<ParticipantTile>
 
             // Layer 3: Bottom gradient (only when video is showing)
             if (showVideo)
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: FractionallySizedBox(
-                    heightFactor: 0.35,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Color(0x99000000)],
-                        ),
-                      ),
+              const Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 60,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Color(0x99000000)],
                     ),
                   ),
                 ),
@@ -175,15 +129,14 @@ class _ParticipantTileState extends State<ParticipantTile>
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (p.isSpeaking) ...[
-                      const SizedBox(width: 4),
-                      SpeakingIndicator(
-                        color: theme.speakingColor,
-                        maxHeight: 12,
-                        minHeight: 3,
-                        barWidth: 2.5,
-                      ),
-                    ],
+                    const SizedBox(width: 4),
+                    SpeakingIndicator(
+                      color: theme.speakingColor,
+                      visible: p.isSpeaking,
+                      maxHeight: 12,
+                      minHeight: 3,
+                      barWidth: 2.5,
+                    ),
                   ],
                 ),
               ),
@@ -200,15 +153,16 @@ class _ParticipantTileState extends State<ParticipantTile>
                 ),
               ),
 
-            // Layer 6: Top-left — signal strength
-            Positioned(
-              left: 6,
-              top: 6,
-              child: SignalStrengthIcon(
-                strength: p.signalStrength,
-                size: 12,
+            // Layer 6: Top-left — signal strength (only when degraded)
+            if (p.signalStrength != SignalStrength.excellent)
+              Positioned(
+                left: 6,
+                top: 6,
+                child: SignalStrengthIcon(
+                  strength: p.signalStrength,
+                  size: 12,
+                ),
               ),
-            ),
 
             // Layer 7: Top-right — screen share
             if (p.isScreenSharing)
@@ -222,39 +176,117 @@ class _ParticipantTileState extends State<ParticipantTile>
                 ),
               ),
 
-            // Layer 8: Speaking border
-            if (p.isSpeaking)
-              RepaintBoundary(
-                child: AnimatedBuilder(
-                  animation: _speakingOpacity!,
-                  builder: (context, _) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: theme.speakingColor.withValues(
-                            alpha: _speakingOpacity!.value,
-                          ),
-                          width: 2.5,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+            // Layer 8: Animated speaking border (isolated StatefulWidget)
+            _SpeakingBorderOverlay(
+              isSpeaking: p.isSpeaking,
+              color: theme.speakingColor,
+            ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildAvatar(CallParticipant participant) {
-    return CallAvatar(
-      displayName: participant.displayName,
-      avatarUrl: participant.avatarUrl,
-      radius: 24,
-      theme: widget.theme,
-      id: participant.id,
+/// An isolated widget that owns its own [AnimationController] for the
+/// speaking-border pulse animation. This prevents the parent
+/// [ParticipantTile] from needing to be a [StatefulWidget] and avoids
+/// rebuilding the entire tile stack when only the border animates.
+class _SpeakingBorderOverlay extends StatefulWidget {
+  final bool isSpeaking;
+  final Color color;
+
+  const _SpeakingBorderOverlay({
+    required this.isSpeaking,
+    required this.color,
+  });
+
+  @override
+  State<_SpeakingBorderOverlay> createState() =>
+      _SpeakingBorderOverlayState();
+}
+
+class _SpeakingBorderOverlayState extends State<_SpeakingBorderOverlay>
+    with SingleTickerProviderStateMixin {
+  AnimationController? _controller;
+  Animation<double>? _opacity;
+
+  void _ensureController() {
+    if (_controller != null) return;
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _opacity = Tween<double>(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(parent: _controller!, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isSpeaking) {
+      _ensureController();
+      _controller!.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _SpeakingBorderOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isSpeaking) {
+      _ensureController();
+      if (!_controller!.isAnimating) {
+        _controller!.repeat(reverse: true);
+      }
+    } else if (_controller != null && _controller!.isAnimating) {
+      _controller!.stop();
+      _controller!.value = 0.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.isSpeaking) return const SizedBox.shrink();
+    return RepaintBoundary(
+      child: CustomPaint(
+        painter: _SpeakingBorderPainter(
+          animation: _opacity!,
+          color: widget.color,
+          strokeWidth: 2.5,
+        ),
+      ),
     );
   }
 }
 
+class _SpeakingBorderPainter extends CustomPainter {
+  final Animation<double> animation;
+  final Color color;
+  final double strokeWidth;
+
+  _SpeakingBorderPainter({
+    required this.animation,
+    required this.color,
+    required this.strokeWidth,
+  }) : super(repaint: animation);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withValues(alpha: animation.value)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+    canvas.drawRect(Offset.zero & size, paint);
+  }
+
+  @override
+  bool shouldRepaint(_SpeakingBorderPainter old) =>
+      color != old.color || strokeWidth != old.strokeWidth;
+}

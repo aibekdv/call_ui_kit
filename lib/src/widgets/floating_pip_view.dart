@@ -192,7 +192,7 @@ class _FloatingPipViewState extends State<FloatingPipView> {
     final initial = widget.displayName.isNotEmpty
         ? widget.displayName[0].toUpperCase()
         : '?';
-    return Container(
+    return ColoredBox(
       color: widget.theme.buttonBackground,
       child: Center(
         child: Column(
@@ -260,7 +260,7 @@ class _FloatingPipViewState extends State<FloatingPipView> {
           top: pos.dy,
           child: child!,
         ),
-        child: pipChild,
+        child: RepaintBoundary(child: pipChild),
       ),
     );
   }

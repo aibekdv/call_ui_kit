@@ -42,7 +42,8 @@ class CallBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return RepaintBoundary(
+      child: Padding(
       padding: EdgeInsets.only(
         left: 12 + safeArea.left,
         right: 12 + safeArea.right,
@@ -123,6 +124,7 @@ class CallBottomBar extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 

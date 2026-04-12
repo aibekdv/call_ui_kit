@@ -64,32 +64,50 @@ class SignalStrengthIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final barWidth = size / 6;
-    final gap = size / 12;
-    final litCount = _litBars;
-    final activeColor = _activeColor;
-    final dimColor = activeColor.withValues(alpha: 0.3);
-
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: List.generate(4, (index) {
-          final barHeight = size * (0.25 + 0.25 * index);
-          final isLit = index < litCount;
-          return Container(
-            width: barWidth,
-            height: barHeight,
-            margin: EdgeInsets.only(left: index == 0 ? 0 : gap),
-            decoration: BoxDecoration(
-              color: isLit ? activeColor : dimColor,
-              borderRadius: BorderRadius.circular(barWidth / 2),
-            ),
-          );
-        }),
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _SignalBarsPainter(
+        litBars: _litBars,
+        activeColor: _activeColor,
+        size: size,
       ),
     );
   }
+}
+
+class _SignalBarsPainter extends CustomPainter {
+  final int litBars;
+  final Color activeColor;
+  final double size;
+
+  const _SignalBarsPainter({
+    required this.litBars,
+    required this.activeColor,
+    required this.size,
+  });
+
+  @override
+  void paint(Canvas canvas, Size canvasSize) {
+    final barWidth = size / 6;
+    final gap = size / 12;
+    final dimColor = activeColor.withValues(alpha: 0.3);
+    final radius = Radius.circular(barWidth / 2);
+    final litPaint = Paint()..color = activeColor;
+    final dimPaint = Paint()..color = dimColor;
+
+    for (var i = 0; i < 4; i++) {
+      final barHeight = size * (0.25 + 0.25 * i);
+      final left = i * (barWidth + gap) + (size - 4 * barWidth - 3 * gap) / 2;
+      final top = size - barHeight;
+      final rect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(left, top, barWidth, barHeight),
+        radius,
+      );
+      canvas.drawRRect(rect, i < litBars ? litPaint : dimPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SignalBarsPainter old) =>
+      litBars != old.litBars || activeColor != old.activeColor;
 }

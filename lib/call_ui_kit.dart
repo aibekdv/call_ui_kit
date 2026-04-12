@@ -13,6 +13,8 @@ export 'src/models/call_theme.dart';
 
 // Screens
 export 'src/screens/call_screen.dart';
+export 'src/screens/incoming_call_screen.dart';
+export 'src/screens/outgoing_call_screen.dart';
 
 // Widgets
 export 'src/widgets/call_avatar.dart';

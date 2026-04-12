@@ -29,6 +29,13 @@ class ParticipantsPanel extends StatelessWidget {
   /// Called when the host mutes a participant.
   final void Function(CallParticipant)? onMuteParticipant;
 
+  /// Called when the host taps "Mute all".
+  ///
+  /// When provided, this is called instead of invoking [onMuteParticipant]
+  /// for each unmuted participant, allowing the host app to batch the
+  /// state update into a single operation.
+  final VoidCallback? onMuteAll;
+
   /// Called when the host removes a participant.
   final void Function(CallParticipant)? onRemoveParticipant;
 
@@ -44,6 +51,7 @@ class ParticipantsPanel extends StatelessWidget {
     required this.theme,
     required this.strings,
     this.onMuteParticipant,
+    this.onMuteAll,
     this.onRemoveParticipant,
     this.onInvite,
   });
@@ -55,7 +63,7 @@ class ParticipantsPanel extends StatelessWidget {
       maxChildSize: 0.95,
       minChildSize: 0.3,
       builder: (context, scrollController) {
-        return Container(
+        return DecoratedBox(
           decoration: BoxDecoration(
             color: theme.barBackground,
             borderRadius:
@@ -85,9 +93,13 @@ class ParticipantsPanel extends StatelessWidget {
                     if (isLocalHost)
                       TextButton(
                         onPressed: () {
-                          for (final p in participants) {
-                            if (!p.isLocalUser && !p.isMuted) {
-                              onMuteParticipant?.call(p);
+                          if (onMuteAll != null) {
+                            onMuteAll!();
+                          } else {
+                            for (final p in participants) {
+                              if (!p.isLocalUser && !p.isMuted) {
+                                onMuteParticipant?.call(p);
+                              }
                             }
                           }
                         },
@@ -129,7 +141,7 @@ class ParticipantsPanel extends StatelessWidget {
                   padding: EdgeInsets.only(
                     left: 16,
                     right: 16,
-                    bottom: MediaQuery.of(context).padding.bottom + 16,
+                    bottom: MediaQuery.paddingOf(context).bottom + 16,
                     top: 8,
                   ),
                   child: SizedBox(
@@ -253,7 +265,7 @@ class ParticipantsPanel extends StatelessWidget {
               const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).padding.bottom + 16,
+          bottom: MediaQuery.paddingOf(context).bottom + 16,
           top: 8,
         ),
         child: Column(

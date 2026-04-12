@@ -110,10 +110,18 @@ class CallParticipant {
         signalStrength,
       );
 
+  /// Returns a copy of this participant with the given fields replaced
+  /// by new values.
+  ///
+  /// To explicitly set a nullable field to `null`, pass the sentinel
+  /// [CallParticipant.absent]. For example:
+  /// ```dart
+  /// participant.copyWith(videoWidget: CallParticipant.absent)
+  /// ```
   CallParticipant copyWith({
     String? id,
     String? displayName,
-    String? avatarUrl,
+    Object? avatarUrl = _sentinel,
     bool? isMuted,
     bool? isCameraOff,
     bool? isSpeaking,
@@ -121,13 +129,14 @@ class CallParticipant {
     bool? isHost,
     bool? isLocalUser,
     SignalStrength? signalStrength,
-    Widget? videoWidget,
-    Widget? screenShareWidget,
+    Object? videoWidget = _sentinel,
+    Object? screenShareWidget = _sentinel,
   }) {
     return CallParticipant(
       id: id ?? this.id,
       displayName: displayName ?? this.displayName,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
+      avatarUrl:
+          identical(avatarUrl, _sentinel) ? this.avatarUrl : avatarUrl as String?,
       isMuted: isMuted ?? this.isMuted,
       isCameraOff: isCameraOff ?? this.isCameraOff,
       isSpeaking: isSpeaking ?? this.isSpeaking,
@@ -135,8 +144,17 @@ class CallParticipant {
       isHost: isHost ?? this.isHost,
       isLocalUser: isLocalUser ?? this.isLocalUser,
       signalStrength: signalStrength ?? this.signalStrength,
-      videoWidget: videoWidget ?? this.videoWidget,
-      screenShareWidget: screenShareWidget ?? this.screenShareWidget,
+      videoWidget:
+          identical(videoWidget, _sentinel) ? this.videoWidget : videoWidget as Widget?,
+      screenShareWidget: identical(screenShareWidget, _sentinel)
+          ? this.screenShareWidget
+          : screenShareWidget as Widget?,
     );
   }
+
+  /// Sentinel value used to explicitly set a nullable field to `null`
+  /// in [copyWith].
+  static const Object absent = _sentinel;
 }
+
+const Object _sentinel = Object();

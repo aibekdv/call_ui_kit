@@ -80,12 +80,14 @@ class ThumbnailRow extends StatelessWidget {
             key: ValueKey(p.id),
             width: 70,
             margin: const EdgeInsets.symmetric(horizontal: 2),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: ParticipantTile(
-                participant: p,
-                theme: theme,
-                strings: strings,
+            child: RepaintBoundary(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: ParticipantTile(
+                  participant: p,
+                  theme: theme,
+                  strings: strings,
+                ),
               ),
             ),
           );

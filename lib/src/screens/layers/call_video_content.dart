@@ -50,7 +50,8 @@ class CallVideoContent extends StatelessWidget {
       return _buildPersonalCallContent();
     }
 
-    final totalCount = participants.length + 1;
+    final allParticipants = [...participants, localParticipant];
+    final totalCount = allParticipants.length;
     final hasScreenShare = screenShareWidget != null;
     final layout = GroupCallLayoutResolver.resolve(
       totalCount: totalCount,
@@ -62,19 +63,27 @@ class CallVideoContent extends StatelessWidget {
       case GroupCallLayoutMode.fullScreenPip:
         return _buildPersonalCallContent();
       case GroupCallLayoutMode.grid2x2:
-        content = _buildGrid(2, 2);
+        content = _buildGrid(2, 2, allParticipants);
       case GroupCallLayoutMode.grid2x3:
-        content = _buildGrid(2, 3);
+        content = _buildGrid(2, 3, allParticipants);
       case GroupCallLayoutMode.speakerView:
         content = _buildSpeakerView();
       case GroupCallLayoutMode.screenShare:
-        content = _buildScreenShareView();
+        content = _buildScreenShareView(allParticipants);
     }
 
     return SafeArea(child: content);
   }
 
   Widget _buildPersonalCallContent() {
+    // Remote participant is sharing their screen — show it full-screen.
+    if (screenShareWidget != null) {
+      return ColoredBox(
+        color: const Color(0xFF0A0A0A),
+        child: screenShareWidget!,
+      );
+    }
+
     final hasRemoteVideo = remoteVideoWidget != null && !isCameraOff;
 
     if (isGroupCall && participants.isNotEmpty) {
@@ -88,7 +97,7 @@ class CallVideoContent extends StatelessWidget {
       return remoteVideoWidget!;
     }
 
-    return Container(
+    return ColoredBox(
       color: theme.background,
       child: Center(
         child: Column(
@@ -127,12 +136,8 @@ class CallVideoContent extends StatelessWidget {
     );
   }
 
-  Widget _buildGrid(int columns, int maxRows) {
-    final allParticipants = [
-      ...participants,
-      localParticipant,
-    ];
-    final count = allParticipants.length;
+  Widget _buildGrid(int columns, int maxRows, List<CallParticipant> all) {
+    final count = all.length;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -142,59 +147,80 @@ class CallVideoContent extends StatelessWidget {
         final colWidth = constraints.maxWidth / columns;
 
         return Stack(
-          children: List.generate(visibleCount, (index) {
-            final p = allParticipants[index];
-            final spanFullWidth = columns == 2 && count == 3 && index == 0;
-            final tileWidth = spanFullWidth ? constraints.maxWidth : colWidth;
-
-            // For the 3-participant special case: first tile is full-width row 0,
-            // remaining tiles are in row 1.
-            final int col;
-            final int row;
-            if (spanFullWidth) {
-              col = 0;
-              row = 0;
-            } else if (columns == 2 && count == 3 && index > 0) {
-              col = index - 1;
-              row = 1;
-            } else {
-              col = index % columns;
-              row = index ~/ columns;
-            }
-
-            return Positioned(
-              key: ValueKey(p.id),
-              left: col * colWidth,
-              top: row * tileHeight,
-              width: tileWidth - 1,
-              height: tileHeight - 1,
-              child: Padding(
-                padding: const EdgeInsets.all(1),
-                child: ParticipantTile(
-                  participant: p,
-                  theme: theme,
-                  strings: strings,
-                ),
+          children: [
+            for (var index = 0; index < visibleCount; index++)
+              _buildGridTile(
+                all[index],
+                index: index,
+                columns: columns,
+                count: count,
+                colWidth: colWidth,
+                tileHeight: tileHeight,
+                fullWidth: constraints.maxWidth,
               ),
-            );
-          }),
+          ],
         );
       },
     );
   }
 
-  Widget _buildSpeakerView() {
-    final activeSpeaker =
-        participants.cast<CallParticipant?>().firstWhere(
-              (p) => p!.isSpeaking,
-              orElse: () =>
-                  participants.isNotEmpty ? participants.first : null,
-            );
+  Widget _buildGridTile(
+    CallParticipant p, {
+    required int index,
+    required int columns,
+    required int count,
+    required double colWidth,
+    required double tileHeight,
+    required double fullWidth,
+  }) {
+    final spanFullWidth = columns == 2 && count == 3 && index == 0;
+    final tileWidth = spanFullWidth ? fullWidth : colWidth;
 
-    final thumbnailParticipants = participants
-        .where((p) => p.id != activeSpeaker?.id)
-        .toList()
-      ..add(localParticipant);
+    final int col;
+    final int row;
+    if (spanFullWidth) {
+      col = 0;
+      row = 0;
+    } else if (columns == 2 && count == 3 && index > 0) {
+      col = index - 1;
+      row = 1;
+    } else {
+      col = index % columns;
+      row = index ~/ columns;
+    }
+
+    return Positioned(
+      key: ValueKey(p.id),
+      left: col * colWidth,
+      top: row * tileHeight,
+      width: tileWidth - 1,
+      height: tileHeight - 1,
+      child: Padding(
+        padding: const EdgeInsets.all(1),
+        child: ParticipantTile(
+          participant: p,
+          theme: theme,
+          strings: strings,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpeakerView() {
+    CallParticipant? activeSpeaker;
+    for (final p in participants) {
+      if (p.isSpeaking) {
+        activeSpeaker = p;
+        break;
+      }
+    }
+    activeSpeaker ??= participants.isNotEmpty ? participants.first : null;
+
+    final thumbnailParticipants = <CallParticipant>[
+      for (final p in participants)
+        if (p.id != activeSpeaker?.id) p,
+      localParticipant,
+    ];
 
     return Column(
       children: [
@@ -219,11 +245,8 @@ class CallVideoContent extends StatelessWidget {
     );
   }
 
-  Widget _buildScreenShareView() {
-    final thumbnailParticipants = [
-      ...participants,
-      localParticipant,
-    ];
+  Widget _buildScreenShareView(List<CallParticipant> allParticipants) {
+    final thumbnailParticipants = allParticipants;
 
     return Column(
       children: [

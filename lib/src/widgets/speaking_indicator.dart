@@ -53,33 +53,21 @@ class SpeakingIndicator extends StatefulWidget {
 }
 
 class _SpeakingIndicatorState extends State<SpeakingIndicator>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   static const _barCount = 3;
   // Phase offsets: 120ms / 700ms ≈ 0.171 per bar
   static const _phaseOffsets = [0.0, 0.171, 0.343];
 
   late final AnimationController _controller;
-  late final AnimationController _fadeController;
-  late final Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       vsync: this,
       duration: widget.duration,
-    )..repeat();
-
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-      value: widget.visible ? 1.0 : 0.0,
     );
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    );
+    if (widget.visible) _controller.repeat();
   }
 
   @override
@@ -87,9 +75,9 @@ class _SpeakingIndicatorState extends State<SpeakingIndicator>
     super.didUpdateWidget(oldWidget);
     if (widget.visible != oldWidget.visible) {
       if (widget.visible) {
-        _fadeController.forward();
+        _controller.repeat();
       } else {
-        _fadeController.reverse();
+        _controller.stop();
       }
     }
   }
@@ -97,46 +85,79 @@ class _SpeakingIndicatorState extends State<SpeakingIndicator>
   @override
   void dispose() {
     _controller.dispose();
-    _fadeController.dispose();
     super.dispose();
-  }
-
-  double _barHeight(int index, double value) {
-    final sineValue = math.sin((value + _phaseOffsets[index]) * 2 * math.pi);
-    final normalized = (sineValue + 1) / 2; // 0..1
-    return widget.minHeight +
-        (widget.maxHeight - widget.minHeight) * normalized;
   }
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SizedBox(
-        height: widget.maxHeight,
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) {
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(_barCount, (index) {
-                return Container(
-                  width: widget.barWidth,
-                  height: _barHeight(index, _controller.value),
-                  margin: EdgeInsets.only(
-                    left: index == 0 ? 0 : 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: widget.color,
-                    borderRadius: BorderRadius.circular(widget.barWidth / 2),
-                  ),
-                );
-              }),
-            );
-          },
+    final totalWidth =
+        widget.barWidth * _barCount + 2 * (_barCount - 1);
+    return AnimatedOpacity(
+      opacity: widget.visible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      child: RepaintBoundary(
+        child: CustomPaint(
+          size: Size(totalWidth, widget.maxHeight),
+          painter: _SpeakingBarsPainter(
+            animation: _controller,
+            color: widget.color,
+            barWidth: widget.barWidth,
+            maxHeight: widget.maxHeight,
+            minHeight: widget.minHeight,
+            phaseOffsets: _phaseOffsets,
+          ),
         ),
       ),
     );
   }
+}
+
+class _SpeakingBarsPainter extends CustomPainter {
+  final Animation<double> animation;
+  final Color color;
+  final double barWidth;
+  final double maxHeight;
+  final double minHeight;
+  final List<double> phaseOffsets;
+
+  _SpeakingBarsPainter({
+    required this.animation,
+    required this.color,
+    required this.barWidth,
+    required this.maxHeight,
+    required this.minHeight,
+    required this.phaseOffsets,
+  }) : super(repaint: animation);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final radius = Radius.circular(barWidth / 2);
+    const gap = 2.0;
+
+    for (var i = 0; i < phaseOffsets.length; i++) {
+      final sineValue =
+          math.sin((animation.value + phaseOffsets[i]) * 2 * math.pi);
+      final normalized = (sineValue + 1) / 2;
+      final barHeight = minHeight + (maxHeight - minHeight) * normalized;
+      final left = i * (barWidth + gap);
+      final top = size.height - barHeight;
+
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(left, top, barWidth, barHeight),
+          radius,
+        ),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SpeakingBarsPainter oldDelegate) =>
+      color != oldDelegate.color ||
+      barWidth != oldDelegate.barWidth ||
+      maxHeight != oldDelegate.maxHeight ||
+      minHeight != oldDelegate.minHeight;
 }

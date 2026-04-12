@@ -41,6 +41,9 @@ class CallTheme {
   /// Divider colour used in bottom sheets and panels.
   final Color dividerColor;
 
+  /// Colour for the accept-call button on the incoming call screen.
+  final Color acceptCallColor;
+
   /// Creates a [CallTheme] with all colours specified.
   const CallTheme({
     required this.background,
@@ -53,6 +56,7 @@ class CallTheme {
     required this.textPrimary,
     required this.textSecondary,
     required this.dividerColor,
+    required this.acceptCallColor,
   });
 
   /// WhatsApp-style dark theme matching the reference screenshots.
@@ -66,7 +70,8 @@ class CallTheme {
         speakerActiveIconColor = Colors.black,
         textPrimary = Colors.white,
         textSecondary = const Color(0xFFAAAAAA),
-        dividerColor = const Color(0xFF3A3A3C);
+        dividerColor = const Color(0xFF3A3A3C),
+        acceptCallColor = const Color(0xFF25D366);
 
   /// Returns a copy of this theme with the given fields replaced.
   CallTheme copyWith({
@@ -80,6 +85,7 @@ class CallTheme {
     Color? textPrimary,
     Color? textSecondary,
     Color? dividerColor,
+    Color? acceptCallColor,
   }) {
     return CallTheme(
       background: background ?? this.background,
@@ -94,6 +100,7 @@ class CallTheme {
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       dividerColor: dividerColor ?? this.dividerColor,
+      acceptCallColor: acceptCallColor ?? this.acceptCallColor,
     );
   }
 }

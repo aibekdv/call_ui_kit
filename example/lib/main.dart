@@ -4,6 +4,8 @@ import 'demos/audio_screen_share.dart';
 import 'demos/group_audio_call.dart';
 import 'demos/group_screen_share.dart';
 import 'demos/group_video_call.dart';
+import 'demos/incoming_call.dart';
+import 'demos/outgoing_call.dart';
 import 'demos/personal_audio_call.dart';
 import 'demos/personal_video_call.dart';
 
@@ -57,36 +59,74 @@ class DemoHomeScreen extends StatelessWidget {
       title: 'Audio Call + Screen Share',
       subtitle: 'WhatsApp theme — audio with screen share',
     ),
+    _DemoItem(
+      icon: Icons.call_received,
+      title: 'Incoming Video Call',
+      subtitle: 'WhatsApp theme — accept / decline',
+    ),
+    _DemoItem(
+      icon: Icons.call_made,
+      title: 'Outgoing Video Call',
+      subtitle: 'WhatsApp theme — calling with toggles',
+    ),
   ];
 
-  static const _screens = <int, Widget Function()>{
-    0: PersonalAudioCallDemo.new,
-    1: PersonalVideoCallDemo.new,
-    2: GroupVideoCallDemo.new,
-    3: GroupScreenShareDemo.new,
-    4: GroupAudioCallDemo.new,
-    5: AudioScreenShareDemo.new,
-  };
+  static final _screens = <Widget Function()>[
+    PersonalAudioCallDemo.new,
+    PersonalVideoCallDemo.new,
+    GroupVideoCallDemo.new,
+    GroupScreenShareDemo.new,
+    GroupAudioCallDemo.new,
+    AudioScreenShareDemo.new,
+    IncomingCallDemo.new,
+    OutgoingCallDemo.new,
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Call UI Kit Demo')),
-      body: ListView.separated(
+      body: GridView.builder(
         padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1,
+        ),
         itemCount: _demos.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final demo = _demos[index];
           return Card(
-            child: ListTile(
-              leading: Icon(demo.icon, size: 32),
-              title: Text(demo.title),
-              subtitle: Text(demo.subtitle),
-              trailing: const Icon(Icons.chevron_right),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => _screens[index]!()),
+                MaterialPageRoute(builder: (_) => _screens[index]()),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(demo.icon, size: 36),
+                    const SizedBox(height: 10),
+                    Text(
+                      demo.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      demo.subtitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
             ),
           );

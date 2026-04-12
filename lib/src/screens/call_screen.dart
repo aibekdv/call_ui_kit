@@ -90,8 +90,8 @@ class CallScreen extends StatefulWidget {
   /// The visual theme. Defaults to [CallTheme.whatsApp].
   final CallTheme theme;
 
-  /// Localised strings. Defaults to [CallStrings.english].
-  final CallStrings strings;
+  /// Localised strings. Defaults to [CallStrings.english] when null.
+  final CallStrings? strings;
 
   /// Optional call status text override (e.g. "Calling...", "04:23").
   /// If null, shows [strings.calling].
@@ -147,6 +147,13 @@ class CallScreen extends StatefulWidget {
   /// Called when the host mutes a participant.
   final void Function(CallParticipant)? onMuteParticipant;
 
+  /// Called when the host taps "Mute all".
+  ///
+  /// When provided, this is called instead of invoking [onMuteParticipant]
+  /// for each unmuted participant, allowing the host app to batch the
+  /// state update into a single operation.
+  final VoidCallback? onMuteAll;
+
   /// Called when the host removes a participant.
   final void Function(CallParticipant)? onRemoveParticipant;
 
@@ -169,7 +176,7 @@ class CallScreen extends StatefulWidget {
     this.isHandRaised = false,
     this.showEncryptionLabel = true,
     this.theme = const CallTheme.whatsApp(),
-    CallStrings? strings,
+    this.strings,
     this.callStatusText,
     required this.onEndCall,
     required this.onToggleMute,
@@ -184,8 +191,9 @@ class CallScreen extends StatefulWidget {
     this.onMinimize,
     this.onRaiseHand,
     this.onMuteParticipant,
+    this.onMuteAll,
     this.onRemoveParticipant,
-  }) : strings = strings ?? const _DefaultStrings();
+  });
 
   @override
   State<CallScreen> createState() => _CallScreenState();
@@ -195,14 +203,41 @@ class _CallScreenState extends State<CallScreen> {
   final ValueNotifier<bool> _controlsVisible = ValueNotifier(true);
   final ValueNotifier<bool> _isSwapped = ValueNotifier(false);
   Timer? _hideTimer;
+  late CallStrings _strings;
+  String? _screenSharerName;
 
-  CallStrings get _strings =>
-      widget.strings is _DefaultStrings ? CallStrings.english() : widget.strings;
+  void _resolveStrings() {
+    _strings = widget.strings ?? CallStrings.englishDefaults;
+  }
+
+  void _resolveScreenSharer() {
+    _screenSharerName = null;
+    for (final p in widget.participants) {
+      if (p.isScreenSharing) {
+        _screenSharerName = p.displayName;
+        break;
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    _resolveStrings();
+    _resolveScreenSharer();
     _startHideTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant CallScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.strings != widget.strings) {
+      _resolveStrings();
+    }
+    if (oldWidget.participants != widget.participants ||
+        oldWidget.isScreenSharing != widget.isScreenSharing) {
+      _resolveScreenSharer();
+    }
   }
 
   @override
@@ -259,6 +294,7 @@ class _CallScreenState extends State<CallScreen> {
         theme: widget.theme,
         strings: _strings,
         onMuteParticipant: widget.onMuteParticipant,
+        onMuteAll: widget.onMuteAll,
         onRemoveParticipant: widget.onRemoveParticipant,
         onInvite: widget.onAddParticipant,
       ),
@@ -267,8 +303,8 @@ class _CallScreenState extends State<CallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final safeArea = MediaQuery.of(context).padding;
-    final screenSize = MediaQuery.of(context).size;
+    final safeArea = MediaQuery.paddingOf(context);
+    final screenSize = MediaQuery.sizeOf(context);
     final theme = widget.theme;
 
     return Scaffold(
@@ -311,7 +347,8 @@ class _CallScreenState extends State<CallScreen> {
                 right: safeArea.right,
                 child: ScreenShareBanner(
                   isLocalSharing: widget.isScreenSharing,
-                  sharerName: _findScreenSharer(),
+                  sharerName:
+                      widget.isScreenSharing ? null : _screenSharerName,
                   theme: theme,
                   strings: _strings,
                   onStop: widget.isScreenSharing
@@ -442,68 +479,5 @@ class _CallScreenState extends State<CallScreen> {
     );
   }
 
-  String? _findScreenSharer() {
-    for (final p in widget.participants) {
-      if (p.isScreenSharing) return p.displayName;
-    }
-    return null;
-  }
 }
 
-/// Sentinel class to detect when no strings were explicitly provided.
-class _DefaultStrings implements CallStrings {
-  const _DefaultStrings();
-
-  @override
-  String get calling => '';
-  @override
-  String get cameraIsOff => '';
-  @override
-  String get you => '';
-  @override
-  String get endToEndEncrypted => '';
-  @override
-  String get shareScreen => '';
-  @override
-  String get sendMessage => '';
-  @override
-  String get participants => '';
-  @override
-  String get shareCallLink => '';
-  @override
-  String get cancel => '';
-  @override
-  String get stop => '';
-  @override
-  String get youAreSharingYourScreen => '';
-  @override
-  String get speaking => '';
-  @override
-  String get muted => '';
-  @override
-  String get muteAll => '';
-  @override
-  String get invite => '';
-  @override
-  String get mute => '';
-  @override
-  String get unmute => '';
-  @override
-  String get removeFromCall => '';
-  @override
-
-  @override
-  String get pictureInPicture => '';
-  @override
-  String get addParticipant => '';
-  @override
-  String get flipCamera => '';
-  @override
-  String get effects => '';
-  @override
-  String Function(String name) get isSharingScreen => (name) => '';
-  @override
-  String Function(int count) get participantsCount => (count) => '';
-  @override
-  String Function(int count) get moreParticipants => (count) => '';
-}

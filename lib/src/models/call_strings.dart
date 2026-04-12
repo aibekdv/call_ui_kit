@@ -77,6 +77,21 @@ class CallStrings {
   /// Tooltip for the effects button.
   final String effects;
 
+  /// Status text for an incoming audio call.
+  final String incomingAudioCall;
+
+  /// Status text for an incoming video call.
+  final String incomingVideoCall;
+
+  /// Label for the decline button on the incoming call screen.
+  final String decline;
+
+  /// Label for the accept button on the incoming call screen.
+  final String accept;
+
+  /// Status text shown when the call has ended.
+  final String callEnded;
+
   /// Returns a string indicating a participant is sharing their screen.
   final String Function(String name) isSharingScreen;
 
@@ -110,10 +125,19 @@ class CallStrings {
     required this.addParticipant,
     required this.flipCamera,
     required this.effects,
+    required this.incomingAudioCall,
+    required this.incomingVideoCall,
+    required this.decline,
+    required this.accept,
+    required this.callEnded,
     required this.isSharingScreen,
     required this.participantsCount,
     required this.moreParticipants,
   });
+
+  /// Cached English defaults. Avoids recreating the instance on every
+  /// frame when no custom strings are provided.
+  static final englishDefaults = CallStrings.english();
 
   /// Creates a [CallStrings] instance with sensible English defaults.
   factory CallStrings.english() {
@@ -140,6 +164,11 @@ class CallStrings {
       addParticipant: 'Add participant',
       flipCamera: 'Flip camera',
       effects: 'Effects',
+      incomingAudioCall: 'Incoming audio call',
+      incomingVideoCall: 'Incoming video call',
+      decline: 'Decline',
+      accept: 'Accept',
+      callEnded: 'Call ended',
       isSharingScreen: (name) => '$name is sharing their screen',
       participantsCount: (count) =>
           '$count participant${count == 1 ? '' : 's'}',
