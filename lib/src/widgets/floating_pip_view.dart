@@ -38,18 +38,6 @@ class FloatingPipView extends StatefulWidget {
   /// The height of the controls area (controls bar + safe area inset).
   final double controlsHeight;
 
-  /// Safe area inset on the left edge.
-  final double safeAreaLeft;
-
-  /// Safe area inset on the right edge.
-  final double safeAreaRight;
-
-  /// Safe area inset at the top (notch / status bar).
-  final double safeAreaTop;
-
-  /// Safe area inset at the bottom (home indicator).
-  final double safeAreaBottom;
-
   /// Listenable that indicates whether call controls are currently visible.
   /// When controls hide, the PiP resnaps to use the full screen area.
   final ValueListenable<bool>? controlsVisible;
@@ -67,10 +55,6 @@ class FloatingPipView extends StatefulWidget {
     required this.screenSize,
     required this.topBarHeight,
     required this.controlsHeight,
-    this.safeAreaLeft = 0,
-    this.safeAreaRight = 0,
-    this.safeAreaTop = 0,
-    this.safeAreaBottom = 0,
     this.controlsVisible,
     this.onTap,
   });
@@ -134,26 +118,20 @@ class _FloatingPipViewState extends State<FloatingPipView> {
       widget.controlsVisible?.value ?? true;
 
   double get _effectiveTopBarHeight =>
-      _controlsShown ? widget.topBarHeight : widget.safeAreaTop;
+      _controlsShown ? widget.topBarHeight : 0;
 
   double get _effectiveControlsHeight =>
-      _controlsShown ? widget.controlsHeight : widget.safeAreaBottom;
+      _controlsShown ? widget.controlsHeight : 0;
 
   Offset get _defaultPosition => Offset(
-        widget.screenSize.width -
-            _pipSize.width -
-            _margin -
-            widget.safeAreaRight,
+        widget.screenSize.width - _pipSize.width - _margin,
         _effectiveTopBarHeight + _margin,
       );
 
   Offset _clampPosition(Offset offset) {
     final dx = offset.dx.clamp(
-      _margin + widget.safeAreaLeft,
-      widget.screenSize.width -
-          _pipSize.width -
-          _margin -
-          widget.safeAreaRight,
+      _margin,
+      widget.screenSize.width - _pipSize.width - _margin,
     );
     final dy = offset.dy.clamp(
       _effectiveTopBarHeight + _margin,

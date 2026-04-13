@@ -304,177 +304,178 @@ class _CallScreenState extends State<CallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final safeArea = MediaQuery.paddingOf(context);
-    final screenSize = MediaQuery.sizeOf(context);
     final theme = widget.theme;
 
     return SafeArea(
       child: Scaffold(
         backgroundColor: theme.background,
-        body: Stack(
-          children: [
-            // Layer 1 — Video content (tap here toggles controls)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: _onScreenTap,
-                behavior: HitTestBehavior.opaque,
-                child: RepaintBoundary(
-                  child: ValueListenableBuilder<bool>(
-                    valueListenable: _isSwapped,
-                    builder: (context, swapped, _) => CallVideoContent(
-                      theme: theme,
-                      strings: _strings,
-                      isGroupCall: widget.isGroupCall,
-                      callerName: widget.callerName,
-                      callerAvatarUrl: widget.callerAvatarUrl,
-                      participants: widget.participants,
-                      localParticipant: widget.localParticipant,
-                      remoteVideoWidget: swapped
-                          ? widget.localVideoWidget
-                          : widget.remoteVideoWidget,
-                      screenShareWidget: widget.screenShareWidget,
-                      isCameraOff: widget.isCameraOff,
-                      onShowParticipantsPanel: _showParticipantsPanel,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final availableSize = constraints.biggest;
+
+            return Stack(
+              children: [
+                // Layer 1 — Video content (tap here toggles controls)
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: _onScreenTap,
+                    behavior: HitTestBehavior.opaque,
+                    child: RepaintBoundary(
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _isSwapped,
+                        builder: (context, swapped, _) => CallVideoContent(
+                          theme: theme,
+                          strings: _strings,
+                          isGroupCall: widget.isGroupCall,
+                          callerName: widget.callerName,
+                          callerAvatarUrl: widget.callerAvatarUrl,
+                          participants: widget.participants,
+                          localParticipant: widget.localParticipant,
+                          remoteVideoWidget: swapped
+                              ? widget.localVideoWidget
+                              : widget.remoteVideoWidget,
+                          screenShareWidget: widget.screenShareWidget,
+                          isCameraOff: widget.isCameraOff,
+                          onShowParticipantsPanel: _showParticipantsPanel,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-        
-            // Screen share banner
-            if (widget.isScreenSharing || widget.screenShareWidget != null)
-              Positioned(
-                top: safeArea.top,
-                left: safeArea.left,
-                right: safeArea.right,
-                child: ScreenShareBanner(
-                  isLocalSharing: widget.isScreenSharing,
-                  sharerName: widget.isScreenSharing ? null : _screenSharerName,
-                  theme: theme,
-                  strings: _strings,
-                  onStop:
-                      widget.isScreenSharing ? widget.onStopScreenShare : null,
-                ),
-              ),
-        
-            // Layer 2 — Top app bar
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: ValueListenableBuilder<bool>(
-                valueListenable: _controlsVisible,
-                builder: (context, visible, child) => IgnorePointer(
-                  ignoring: !visible,
-                  child: AnimatedOpacity(
-                    opacity: visible ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: child,
+
+                // Screen share banner
+                if (widget.isScreenSharing || widget.screenShareWidget != null)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: ScreenShareBanner(
+                      isLocalSharing: widget.isScreenSharing,
+                      sharerName:
+                          widget.isScreenSharing ? null : _screenSharerName,
+                      theme: theme,
+                      strings: _strings,
+                      onStop: widget.isScreenSharing
+                          ? widget.onStopScreenShare
+                          : null,
+                    ),
+                  ),
+
+                // Layer 2 — Top app bar
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _controlsVisible,
+                    builder: (context, visible, child) => IgnorePointer(
+                      ignoring: !visible,
+                      child: AnimatedOpacity(
+                        opacity: visible ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: child,
+                      ),
+                    ),
+                    child: CallTopBar(
+                      theme: theme,
+                      strings: _strings,
+                      callerName: widget.callerName,
+                      callStatusText: widget.callStatusText,
+                      callType: widget.callType,
+                      isGroupCall: widget.isGroupCall,
+                      participantCount: widget.participants.length + 1,
+                      onResetHideTimer: _resetHideTimer,
+                      onFlipCamera: widget.onFlipCamera,
+                      onMinimize: widget.onMinimize,
+                    ),
                   ),
                 ),
-                child: CallTopBar(
-                  safeArea: safeArea,
-                  theme: theme,
-                  strings: _strings,
-                  callerName: widget.callerName,
-                  callStatusText: widget.callStatusText,
-                  callType: widget.callType,
-                  isGroupCall: widget.isGroupCall,
-                  participantCount: widget.participants.length + 1,
-                  onResetHideTimer: _resetHideTimer,
-                  onFlipCamera: widget.onFlipCamera,
-                  onMinimize: widget.onMinimize,
-                ),
-              ),
-            ),
-        
-            // Layer 3 — Right side floating buttons
-            Positioned(
-              top: 100 + safeArea.top,
-              right: 12 + safeArea.right,
-              child: ValueListenableBuilder<bool>(
-                valueListenable: _controlsVisible,
-                builder: (context, visible, child) => IgnorePointer(
-                  ignoring: !visible,
-                  child: AnimatedOpacity(
-                    opacity: visible ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: child,
+
+                // Layer 3 — Right side floating buttons
+                Positioned(
+                  top: 100,
+                  right: 12,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _controlsVisible,
+                    builder: (context, visible, child) => IgnorePointer(
+                      ignoring: !visible,
+                      child: AnimatedOpacity(
+                        opacity: visible ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: child,
+                      ),
+                    ),
+                    child: CallRightButtons(
+                      theme: theme,
+                      strings: _strings,
+                      onAddParticipant: widget.onAddParticipant,
+                      onEffects: widget.onEffects,
+                      onResetHideTimer: _resetHideTimer,
+                    ),
                   ),
                 ),
-                child: CallRightButtons(
-                  theme: theme,
-                  strings: _strings,
-                  onAddParticipant: widget.onAddParticipant,
-                  onEffects: widget.onEffects,
-                  onResetHideTimer: _resetHideTimer,
-                ),
-              ),
-            ),
-        
-            // Layer 4 — Local PiP view (video calls only)
-            if (widget.callType == CallType.video &&
-                (!widget.isGroupCall || widget.participants.length <= 1))
-              ValueListenableBuilder<bool>(
-                valueListenable: _isSwapped,
-                builder: (context, swapped, _) => FloatingPipView(
-                  displayName: swapped
-                      ? widget.callerName
-                      : widget.localParticipant.displayName,
-                  theme: theme,
-                  strings: _strings,
-                  screenSize: screenSize,
-                  topBarHeight: safeArea.top + 80,
-                  controlsHeight: safeArea.bottom + 100,
-                  safeAreaLeft: safeArea.left,
-                  safeAreaRight: safeArea.right,
-                  safeAreaTop: safeArea.top,
-                  safeAreaBottom: safeArea.bottom,
-                  controlsVisible: _controlsVisible,
-                  onTap: () => _isSwapped.value = !_isSwapped.value,
-                  child: widget.isCameraOff
-                      ? null
-                      : swapped
-                          ? widget.remoteVideoWidget
-                          : widget.localVideoWidget,
-                ),
-              ),
-        
-            // Layer 5 — Bottom controls bar
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: ValueListenableBuilder<bool>(
-                valueListenable: _controlsVisible,
-                builder: (context, visible, child) => IgnorePointer(
-                  ignoring: !visible,
-                  child: AnimatedOpacity(
-                    opacity: visible ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: child,
+
+                // Layer 4 — Local PiP view (video calls only)
+                if (widget.callType == CallType.video &&
+                    (!widget.isGroupCall || widget.participants.length <= 1))
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _isSwapped,
+                    builder: (context, swapped, _) => FloatingPipView(
+                      displayName: swapped
+                          ? widget.callerName
+                          : widget.localParticipant.displayName,
+                      theme: theme,
+                      strings: _strings,
+                      screenSize: availableSize,
+                      topBarHeight: 80,
+                      controlsHeight: 100,
+                      controlsVisible: _controlsVisible,
+                      onTap: () => _isSwapped.value = !_isSwapped.value,
+                      child: widget.isCameraOff
+                          ? null
+                          : swapped
+                              ? widget.remoteVideoWidget
+                              : widget.localVideoWidget,
+                    ),
+                  ),
+
+                // Layer 5 — Bottom controls bar
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _controlsVisible,
+                    builder: (context, visible, child) => IgnorePointer(
+                      ignoring: !visible,
+                      child: AnimatedOpacity(
+                        opacity: visible ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: child,
+                      ),
+                    ),
+                    child: CallBottomBar(
+                      bottomPadding: 0,
+                      theme: theme,
+                      isMuted: widget.isMuted,
+                      isCameraOff: widget.isCameraOff,
+                      isSpeakerOn: widget.isSpeakerOn,
+                      onResetHideTimer: _resetHideTimer,
+                      onShowMore: widget.moreSheetBuilder != null
+                          ? _showMoreBottomSheet
+                          : null,
+                      onToggleMute: widget.onToggleMute,
+                      onToggleCamera: widget.onToggleCamera,
+                      onToggleScreenShare: widget.onToggleScreenShare,
+                      isScreenSharing: widget.isScreenSharing,
+                      onToggleSpeaker: widget.onToggleSpeaker,
+                      onEndCall: widget.onEndCall,
+                    ),
                   ),
                 ),
-                child: CallBottomBar(
-                  safeArea: safeArea,
-                  theme: theme,
-                  isMuted: widget.isMuted,
-                  isCameraOff: widget.isCameraOff,
-                  isSpeakerOn: widget.isSpeakerOn,
-                  onResetHideTimer: _resetHideTimer,
-                  onShowMore: widget.moreSheetBuilder != null
-                      ? _showMoreBottomSheet
-                      : null,
-                  onToggleMute: widget.onToggleMute,
-                  onToggleCamera: widget.onToggleCamera,
-                  onToggleScreenShare: widget.onToggleScreenShare,
-                  isScreenSharing: widget.isScreenSharing,
-                  onToggleSpeaker: widget.onToggleSpeaker,
-                  onEndCall: widget.onEndCall,
-                ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );

@@ -9,7 +9,6 @@ import '../../models/call_type.dart';
 
 /// A gradient-backed top bar showing caller info and camera controls.
 class CallTopBar extends StatelessWidget {
-  final EdgeInsets safeArea;
   final CallTheme theme;
   final CallStrings strings;
   final String callerName;
@@ -23,7 +22,6 @@ class CallTopBar extends StatelessWidget {
 
   const CallTopBar({
     super.key,
-    required this.safeArea,
     required this.theme,
     required this.strings,
     required this.callerName,
@@ -39,11 +37,6 @@ class CallTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(
-        top: safeArea.top,
-        left: safeArea.left,
-        right: safeArea.right,
-      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -54,7 +47,7 @@ class CallTopBar extends StatelessWidget {
           ],
         ),
       ),
-      height: 80 + safeArea.top,
+      height: 80,
       child: Row(
         children: [
           // Left — Minimize / PiP button

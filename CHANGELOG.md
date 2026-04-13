@@ -1,3 +1,17 @@
+## 0.3.0
+
+### Improvements
+* Wrap `CallScreen` Scaffold with `SafeArea` — all content now respects device insets automatically.
+* Replace manual `MediaQuery.paddingOf` safe area handling with `LayoutBuilder` for accurate sizing.
+* Remove `EdgeInsets safeArea` parameter from `CallTopBar` and `CallBottomBar`.
+* Remove `safeAreaLeft/Right/Top/Bottom` parameters from `FloatingPipView`.
+* Remove redundant `SafeArea` wrapper from `CallVideoContent` group call layout.
+
+### Breaking Changes
+* `CallTopBar`: removed `safeArea` parameter.
+* `CallBottomBar`: replaced `safeArea` parameter with `bottomPadding` (`double`).
+* `FloatingPipView`: removed `safeAreaLeft`, `safeAreaRight`, `safeAreaTop`, `safeAreaBottom` parameters.
+
 ## 0.2.1
 
 * Lower minimum SDK constraints from Dart `^3.11.3` / Flutter `>=3.29.0` to Dart `^3.4.0` / Flutter `>=3.22.0` for wider compatibility.

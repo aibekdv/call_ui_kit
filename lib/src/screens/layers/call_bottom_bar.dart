@@ -9,7 +9,7 @@ import '../../models/call_theme.dart';
 ///
 /// Each optional button is shown only when its callback is provided.
 class CallBottomBar extends StatelessWidget {
-  final EdgeInsets safeArea;
+  final double bottomPadding;
   final CallTheme theme;
   final bool isMuted;
   final bool isCameraOff;
@@ -25,7 +25,7 @@ class CallBottomBar extends StatelessWidget {
 
   const CallBottomBar({
     super.key,
-    required this.safeArea,
+    this.bottomPadding = 0,
     required this.theme,
     required this.isMuted,
     this.isCameraOff = false,
@@ -45,9 +45,9 @@ class CallBottomBar extends StatelessWidget {
     return RepaintBoundary(
       child: Padding(
       padding: EdgeInsets.only(
-        left: 12 + safeArea.left,
-        right: 12 + safeArea.right,
-        bottom: safeArea.bottom + 20,
+        left: 12,
+        right: 12,
+        bottom: bottomPadding + 20,
       ),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),

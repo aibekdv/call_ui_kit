@@ -72,7 +72,7 @@ class CallVideoContent extends StatelessWidget {
         content = _buildScreenShareView(allParticipants);
     }
 
-    return SafeArea(child: content);
+    return content;
   }
 
   Widget _buildPersonalCallContent() {
