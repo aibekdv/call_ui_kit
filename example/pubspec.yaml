@@ -3,7 +3,7 @@ description: Example app demonstrating call_ui_kit package.
 publish_to: 'none'
 
 environment:
-  sdk: ^3.11.3
+  sdk: ^3.4.0
 
 dependencies:
   flutter:

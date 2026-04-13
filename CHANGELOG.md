@@ -1,3 +1,7 @@
+## 0.2.1
+
+* Lower minimum SDK constraints from Dart `^3.11.3` / Flutter `>=3.29.0` to Dart `^3.4.0` / Flutter `>=3.22.0` for wider compatibility.
+
 ## 0.2.0
 
 ### Performance

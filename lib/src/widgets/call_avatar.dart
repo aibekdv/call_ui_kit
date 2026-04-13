@@ -66,7 +66,7 @@ class CallAvatar extends StatelessWidget {
                 cacheHeight: pixelSize,
                 cacheWidth: pixelSize,
                 gaplessPlayback: true,
-                errorBuilder: (_, _, _) => _buildInitialAvatar(),
+                errorBuilder: (_, __, ___) => _buildInitialAvatar(),
               );
             },
           ),

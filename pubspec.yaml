@@ -1,6 +1,6 @@
 name: call_ui_kit
 description: A ready-to-use Flutter call UI kit for personal audio, video, and group calls.
-version: 0.2.0
+version: 0.2.1
 homepage: https://github.com/aibekdv/call_ui_kit
 repository: https://github.com/aibekdv/call_ui_kit
 issue_tracker: https://github.com/aibekdv/call_ui_kit/issues
@@ -13,8 +13,8 @@ topics:
   - whatsapp
 
 environment:
-  sdk: ^3.11.3
-  flutter: ">=3.29.0"
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
 
 dependencies:
   flutter:
