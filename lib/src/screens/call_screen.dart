@@ -308,10 +308,10 @@ class _CallScreenState extends State<CallScreen> {
     final screenSize = MediaQuery.sizeOf(context);
     final theme = widget.theme;
 
-    return Scaffold(
-      backgroundColor: theme.background,
-      body: SafeArea(
-        child: Stack(
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: theme.background,
+        body: Stack(
           children: [
             // Layer 1 — Video content (tap here toggles controls)
             Positioned.fill(
@@ -340,7 +340,7 @@ class _CallScreenState extends State<CallScreen> {
                 ),
               ),
             ),
-
+        
             // Screen share banner
             if (widget.isScreenSharing || widget.screenShareWidget != null)
               Positioned(
@@ -356,7 +356,7 @@ class _CallScreenState extends State<CallScreen> {
                       widget.isScreenSharing ? widget.onStopScreenShare : null,
                 ),
               ),
-
+        
             // Layer 2 — Top app bar
             Positioned(
               top: 0,
@@ -387,7 +387,7 @@ class _CallScreenState extends State<CallScreen> {
                 ),
               ),
             ),
-
+        
             // Layer 3 — Right side floating buttons
             Positioned(
               top: 100 + safeArea.top,
@@ -411,7 +411,7 @@ class _CallScreenState extends State<CallScreen> {
                 ),
               ),
             ),
-
+        
             // Layer 4 — Local PiP view (video calls only)
             if (widget.callType == CallType.video &&
                 (!widget.isGroupCall || widget.participants.length <= 1))
@@ -439,7 +439,7 @@ class _CallScreenState extends State<CallScreen> {
                           : widget.localVideoWidget,
                 ),
               ),
-
+        
             // Layer 5 — Bottom controls bar
             Positioned(
               bottom: 0,
