@@ -135,7 +135,8 @@ class CallScreen extends StatefulWidget {
   /// When provided, the builder receives [BuildContext] and [CallTheme]
   /// and should return the widget(s) to display in the sheet body.
   /// When null, the "more" button is hidden from the bottom bar.
-  final Widget Function(BuildContext context, CallTheme theme)? moreSheetBuilder;
+  final Widget Function(BuildContext context, CallTheme theme)?
+      moreSheetBuilder;
 
   /// Called when the minimize / PiP button is tapped.
   /// When null, the minimize button is hidden.
@@ -309,7 +310,8 @@ class _CallScreenState extends State<CallScreen> {
 
     return Scaffold(
       backgroundColor: theme.background,
-      body: Stack(
+      body: SafeArea(
+        child: Stack(
           children: [
             // Layer 1 — Video content (tap here toggles controls)
             Positioned.fill(
@@ -347,13 +349,11 @@ class _CallScreenState extends State<CallScreen> {
                 right: safeArea.right,
                 child: ScreenShareBanner(
                   isLocalSharing: widget.isScreenSharing,
-                  sharerName:
-                      widget.isScreenSharing ? null : _screenSharerName,
+                  sharerName: widget.isScreenSharing ? null : _screenSharerName,
                   theme: theme,
                   strings: _strings,
-                  onStop: widget.isScreenSharing
-                      ? widget.onStopScreenShare
-                      : null,
+                  onStop:
+                      widget.isScreenSharing ? widget.onStopScreenShare : null,
                 ),
               ),
 
@@ -475,9 +475,8 @@ class _CallScreenState extends State<CallScreen> {
               ),
             ),
           ],
+        ),
       ),
     );
   }
-
 }
-

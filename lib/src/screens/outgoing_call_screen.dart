@@ -88,10 +88,10 @@ class OutgoingCallScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = strings ?? CallStrings.english();
 
-    return Scaffold(
-      backgroundColor: theme.background,
-      body: SafeArea(
-        child: Column(
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: theme.background,
+        body: Column(
           children: [
             // ── Top bar with minimize ──
             if (onMinimize != null)
@@ -215,9 +215,8 @@ class _ToggleButton extends StatelessWidget {
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: isActive
-              ? theme.speakerActiveBackground
-              : theme.buttonBackground,
+          color:
+              isActive ? theme.speakerActiveBackground : theme.buttonBackground,
           shape: BoxShape.circle,
         ),
         child: Icon(

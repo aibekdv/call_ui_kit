@@ -89,7 +89,7 @@ class CallVideoContent extends StatelessWidget {
     if (isGroupCall && participants.isNotEmpty) {
       final remote = participants.first;
       if (remote.videoWidget != null && !remote.isCameraOff) {
-        return Positioned.fill(child: remote.videoWidget!);
+        return SizedBox.expand(child: remote.videoWidget!);
       }
     }
 

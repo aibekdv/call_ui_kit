@@ -60,14 +60,13 @@ class IncomingCallScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = strings ?? CallStrings.english();
-    final statusText = callType == CallType.video
-        ? s.incomingVideoCall
-        : s.incomingAudioCall;
+    final statusText =
+        callType == CallType.video ? s.incomingVideoCall : s.incomingAudioCall;
 
-    return Scaffold(
-      backgroundColor: theme.background,
-      body: SafeArea(
-        child: Column(
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: theme.background,
+        body: Column(
           children: [
             // ── Caller info ──
             Expanded(
