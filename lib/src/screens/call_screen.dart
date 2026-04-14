@@ -451,24 +451,31 @@ class _CallScreenState extends State<CallScreen> {
               LayoutBuilder(
                 builder: (context, constraints) {
                   final availableSize = constraints.biggest;
-                  return ValueListenableBuilder<bool>(
-                    valueListenable: _isSwapped,
-                    builder: (context, swapped, _) => FloatingPipView(
-                      displayName: swapped
-                          ? widget.callerName
-                          : widget.localParticipant.displayName,
-                      theme: theme,
-                      strings: _strings,
-                      screenSize: availableSize,
-                      topBarHeight: 80,
-                      controlsHeight: 100,
-                      controlsVisible: _controls.visible,
-                      onTap: () => _isSwapped.value = !_isSwapped.value,
-                      child: widget.isCameraOff
-                          ? null
-                          : swapped
-                              ? widget.remoteVideoWidget
-                              : widget.localVideoWidget,
+                  return SizedBox.expand(
+                    child: Stack(
+                      children: [
+                        ValueListenableBuilder<bool>(
+                          valueListenable: _isSwapped,
+                          builder: (context, swapped, _) => FloatingPipView(
+                            displayName: swapped
+                                ? widget.callerName
+                                : widget.localParticipant.displayName,
+                            theme: theme,
+                            strings: _strings,
+                            screenSize: availableSize,
+                            topBarHeight: 80,
+                            controlsHeight: 100,
+                            controlsVisible: _controls.visible,
+                            onTap: () =>
+                                _isSwapped.value = !_isSwapped.value,
+                            child: widget.isCameraOff
+                                ? null
+                                : swapped
+                                    ? widget.remoteVideoWidget
+                                    : widget.localVideoWidget,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 },
