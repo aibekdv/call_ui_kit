@@ -1,3 +1,30 @@
+## 0.4.0
+
+### Performance
+* Narrow `LayoutBuilder` scope in `CallScreen` — only `FloatingPipView` rebuilds on constraint changes instead of all 5 layers.
+* Pre-compute `allParticipants` list in `didUpdateWidget` instead of allocating on every build.
+* Add `ValueKey` to `ParticipantTile` in grid layouts for correct widget reuse across participant reorders.
+* Add `RepaintBoundary` to `ScreenShareBanner` slide animation to isolate repaints.
+
+### Improvements
+* Animate grid layout transitions with `AnimatedPositioned` (250ms easeOutCubic) — smooth tile repositioning when participants join or leave.
+* Add `Semantics` to all call control buttons, `ParticipantTile`, and `SignalStrengthIcon` for screen reader accessibility.
+* Add `endCall`, `speaker`, `camera`, `moreOptions` localisation strings to `CallStrings`.
+* Extract controls visibility timer into `_ControlsVisibilityController` for cleaner `CallScreen` state management.
+* Add defensive timer cancellation in `_startHideTimer()` to prevent timer leaks.
+* Add `_VideoErrorBoundary` around externally-provided video widgets — catches rendering errors at the `RenderObject` level and shows a fallback instead of crashing the call screen.
+* Add `toString()` to `CallParticipant` and `CallTheme` for easier debugging.
+* Document why `videoWidget`/`screenShareWidget` are excluded from `CallParticipant` equality.
+
+### Breaking Changes
+* `CallBottomBar`: now requires a `strings` (`CallStrings`) parameter for accessibility labels.
+* `CallVideoContent`: new optional `allParticipants` parameter — pass a pre-built list to avoid per-build allocation.
+
+## 0.3.1
+
+### Bug Fixes
+* Fix remote video being hidden when local camera is turned off in personal (1-on-1) calls.
+
 ## 0.3.0
 
 ### Improvements

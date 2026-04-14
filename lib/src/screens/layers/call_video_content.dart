@@ -24,9 +24,16 @@ class CallVideoContent extends StatelessWidget {
   final String? callerAvatarUrl;
   final List<CallParticipant> participants;
   final CallParticipant localParticipant;
+
+  /// Pre-computed list of all participants (remote + local).
+  /// When provided, avoids re-creating the list on every build.
+  final List<CallParticipant>? allParticipants;
+
   final Widget? remoteVideoWidget;
   final Widget? screenShareWidget;
   final bool isCameraOff;
+  final bool isScreenSharing;
+  final VoidCallback? onStopScreenShare;
   final VoidCallback onShowParticipantsPanel;
 
   const CallVideoContent({
@@ -38,9 +45,12 @@ class CallVideoContent extends StatelessWidget {
     this.callerAvatarUrl,
     required this.participants,
     required this.localParticipant,
+    this.allParticipants,
     this.remoteVideoWidget,
     this.screenShareWidget,
     required this.isCameraOff,
+    this.isScreenSharing = false,
+    this.onStopScreenShare,
     required this.onShowParticipantsPanel,
   });
 
@@ -50,8 +60,8 @@ class CallVideoContent extends StatelessWidget {
       return _buildPersonalCallContent();
     }
 
-    final allParticipants = [...participants, localParticipant];
-    final totalCount = allParticipants.length;
+    final all = allParticipants ?? [...participants, localParticipant];
+    final totalCount = all.length;
     final hasScreenShare = screenShareWidget != null;
     final layout = GroupCallLayoutResolver.resolve(
       totalCount: totalCount,
@@ -63,28 +73,25 @@ class CallVideoContent extends StatelessWidget {
       case GroupCallLayoutMode.fullScreenPip:
         return _buildPersonalCallContent();
       case GroupCallLayoutMode.grid2x2:
-        content = _buildGrid(2, 2, allParticipants);
+        content = _buildGrid(2, 2, all);
       case GroupCallLayoutMode.grid2x3:
-        content = _buildGrid(2, 3, allParticipants);
+        content = _buildGrid(2, 3, all);
       case GroupCallLayoutMode.speakerView:
         content = _buildSpeakerView();
       case GroupCallLayoutMode.screenShare:
-        content = _buildScreenShareView(allParticipants);
+        content = _buildScreenShareView(all);
     }
 
     return content;
   }
 
   Widget _buildPersonalCallContent() {
-    // Remote participant is sharing their screen — show it full-screen.
-    if (screenShareWidget != null) {
-      return ColoredBox(
-        color: const Color(0xFF0A0A0A),
-        child: screenShareWidget!,
-      );
+    // Screen sharing active — show WhatsApp-style layout with thumbnails.
+    if (screenShareWidget != null || isScreenSharing) {
+      return _buildPersonalScreenShareView();
     }
 
-    final hasRemoteVideo = remoteVideoWidget != null && !isCameraOff;
+    final hasRemoteVideo = remoteVideoWidget != null;
 
     if (isGroupCall && participants.isNotEmpty) {
       final remote = participants.first;
@@ -127,6 +134,82 @@ class CallVideoContent extends StatelessWidget {
                 style: TextStyle(
                   color: theme.textPrimary.withValues(alpha: 0.5),
                   fontSize: 13,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonalScreenShareView() {
+    final thumbnailParticipants = <CallParticipant>[
+      if (participants.isNotEmpty) participants.first,
+      localParticipant,
+    ];
+
+    return Column(
+      children: [
+        Expanded(
+          child: isScreenSharing
+              ? _buildLocalSharingInfo()
+              : Container(
+                  color: const Color(0xFF0A0A0A),
+                  child: screenShareWidget ?? const SizedBox.expand(),
+                ),
+        ),
+        ThumbnailRow(
+          participants: thumbnailParticipants,
+          theme: theme,
+          strings: strings,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocalSharingInfo() {
+    return ColoredBox(
+      color: theme.background,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.screen_share,
+              color: theme.textPrimary,
+              size: 48,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              strings.youAreSharingYourScreen,
+              style: TextStyle(
+                color: theme.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (onStopScreenShare != null) ...[
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: onStopScreenShare,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.endCallColor,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text(
+                    strings.stopScreenSharing,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -189,8 +272,10 @@ class CallVideoContent extends StatelessWidget {
       row = index ~/ columns;
     }
 
-    return Positioned(
+    return AnimatedPositioned(
       key: ValueKey(p.id),
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
       left: col * colWidth,
       top: row * tileHeight,
       width: tileWidth - 1,
@@ -198,6 +283,7 @@ class CallVideoContent extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(1),
         child: ParticipantTile(
+          key: ValueKey(p.id),
           participant: p,
           theme: theme,
           strings: strings,

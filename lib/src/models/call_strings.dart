@@ -41,6 +41,9 @@ class CallStrings {
   /// Label for the stop button on the screen-share banner.
   final String stop;
 
+  /// Label for the stop-screen-sharing button in the personal call view.
+  final String stopScreenSharing;
+
   /// Banner text when the local user is sharing their screen.
   final String youAreSharingYourScreen;
 
@@ -92,6 +95,20 @@ class CallStrings {
   /// Status text shown when the call has ended.
   final String callEnded;
 
+  // ── Accessibility labels ──
+
+  /// Semantic label for the end-call button.
+  final String endCall;
+
+  /// Semantic label for the speaker toggle button.
+  final String speaker;
+
+  /// Semantic label for the camera toggle button.
+  final String camera;
+
+  /// Semantic label for the more-options button.
+  final String moreOptions;
+
   /// Returns a string indicating a participant is sharing their screen.
   final String Function(String name) isSharingScreen;
 
@@ -113,6 +130,7 @@ class CallStrings {
     required this.shareCallLink,
     required this.cancel,
     required this.stop,
+    this.stopScreenSharing = 'Stop screen sharing',
     required this.youAreSharingYourScreen,
     required this.speaking,
     required this.muted,
@@ -130,6 +148,10 @@ class CallStrings {
     required this.decline,
     required this.accept,
     required this.callEnded,
+    this.endCall = 'End call',
+    this.speaker = 'Speaker',
+    this.camera = 'Camera',
+    this.moreOptions = 'More options',
     required this.isSharingScreen,
     required this.participantsCount,
     required this.moreParticipants,
@@ -152,6 +174,7 @@ class CallStrings {
       shareCallLink: 'Share call link',
       cancel: 'Cancel',
       stop: 'Stop',
+      stopScreenSharing: 'Stop screen sharing',
       youAreSharingYourScreen: 'You are sharing your screen',
       speaking: 'Speaking',
       muted: 'Muted',
@@ -169,6 +192,10 @@ class CallStrings {
       decline: 'Decline',
       accept: 'Accept',
       callEnded: 'Call ended',
+      endCall: 'End call',
+      speaker: 'Speaker',
+      camera: 'Camera',
+      moreOptions: 'More options',
       isSharingScreen: (name) => '$name is sharing their screen',
       participantsCount: (count) =>
           '$count participant${count == 1 ? '' : 's'}',

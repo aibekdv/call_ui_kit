@@ -7,6 +7,7 @@ import 'demos/group_video_call.dart';
 import 'demos/incoming_call.dart';
 import 'demos/outgoing_call.dart';
 import 'demos/personal_audio_call.dart';
+import 'demos/personal_screen_share.dart';
 import 'demos/personal_video_call.dart';
 
 void main() => runApp(const CallUiKitExample());
@@ -46,6 +47,11 @@ class DemoHomeScreen extends StatelessWidget {
     ),
     _DemoItem(
       icon: Icons.screen_share,
+      title: 'Personal Call + Screen Share',
+      subtitle: 'WhatsApp theme — screen share in 1-on-1',
+    ),
+    _DemoItem(
+      icon: Icons.screen_share,
       title: 'Group Call + Screen Share',
       subtitle: 'WhatsApp theme — screen share layout',
     ),
@@ -75,6 +81,7 @@ class DemoHomeScreen extends StatelessWidget {
     PersonalAudioCallDemo.new,
     PersonalVideoCallDemo.new,
     GroupVideoCallDemo.new,
+    PersonalScreenShareDemo.new,
     GroupScreenShareDemo.new,
     GroupAudioCallDemo.new,
     AudioScreenShareDemo.new,

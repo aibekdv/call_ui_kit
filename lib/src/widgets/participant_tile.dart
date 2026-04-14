@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../models/call_participant.dart';
 import '../models/call_strings.dart';
@@ -47,16 +48,22 @@ class ParticipantTile extends StatelessWidget {
     final p = participant;
     final showVideo = p.videoWidget != null && !p.isCameraOff;
 
-    return RepaintBoundary(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Stack(
+    return Semantics(
+      label: '${p.displayName}'
+          '${p.isMuted ? ', ${strings.muted}' : ''}'
+          '${p.isSpeaking ? ', ${strings.speaking}' : ''}',
+      child: RepaintBoundary(
+        child: GestureDetector(
+          onTap: onTap,
+          child: Stack(
           fit: StackFit.expand,
           children: [
             // Layer 1: Video or avatar fallback
             if (showVideo)
               Positioned.fill(
-                child: RepaintBoundary(child: p.videoWidget!),
+                child: RepaintBoundary(
+                  child: _VideoErrorBoundary(child: p.videoWidget!),
+                ),
               )
             else
               ColoredBox(
@@ -184,6 +191,7 @@ class ParticipantTile extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }
@@ -263,6 +271,75 @@ class _SpeakingBorderOverlayState extends State<_SpeakingBorderOverlay>
         ),
       ),
     );
+  }
+}
+
+/// Catches rendering errors from externally-provided video widgets
+/// and shows a dark fallback instead of crashing the entire call screen.
+class _VideoErrorBoundary extends StatefulWidget {
+  final Widget child;
+
+  const _VideoErrorBoundary({required this.child});
+
+  @override
+  State<_VideoErrorBoundary> createState() => _VideoErrorBoundaryState();
+}
+
+class _VideoErrorBoundaryState extends State<_VideoErrorBoundary> {
+  bool _hasError = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return const ColoredBox(color: Colors.black);
+    }
+
+    return _VideoErrorCatcher(
+      onError: () {
+        if (mounted) setState(() => _hasError = true);
+      },
+      child: widget.child,
+    );
+  }
+
+  @override
+  void didUpdateWidget(_VideoErrorBoundary oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reset error state when video widget changes, allowing recovery.
+    if (oldWidget.child != widget.child && _hasError) {
+      _hasError = false;
+    }
+  }
+}
+
+class _VideoErrorCatcher extends SingleChildRenderObjectWidget {
+  final VoidCallback onError;
+
+  const _VideoErrorCatcher({required this.onError, required super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderVideoErrorCatcher(onError);
+
+  @override
+  void updateRenderObject(
+      BuildContext context, covariant _RenderVideoErrorCatcher renderObject) {
+    renderObject.onError = onError;
+  }
+}
+
+class _RenderVideoErrorCatcher extends RenderProxyBox {
+  VoidCallback onError;
+
+  _RenderVideoErrorCatcher(this.onError);
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    try {
+      super.paint(context, offset);
+    } catch (_) {
+      onError();
+    }
   }
 }
 

@@ -76,9 +76,11 @@ class _ScreenShareBannerState extends State<ScreenShareBanner>
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _slideAnimation,
-      child: widget.isLocalSharing ? _buildLocalBanner() : _buildRemoteBanner(),
+    return RepaintBoundary(
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: widget.isLocalSharing ? _buildLocalBanner() : _buildRemoteBanner(),
+      ),
     );
   }
 

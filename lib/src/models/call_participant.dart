@@ -76,10 +76,13 @@ class CallParticipant {
     this.screenShareWidget,
   });
 
-  /// Returns a copy of this participant with the given fields replaced
-  /// by new values.
+  /// Compares participants by identity and media state only.
   ///
-  /// Any field that is not explicitly provided retains its current value.
+  /// [videoWidget] and [screenShareWidget] are intentionally excluded because
+  /// Flutter widgets do not have meaningful equality semantics — two identical
+  /// widget trees are distinct object references. Including them would cause
+  /// every rebuild to report a change, defeating optimisation checks in
+  /// [didUpdateWidget] and list-equality comparisons.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -155,6 +158,12 @@ class CallParticipant {
   /// Sentinel value used to explicitly set a nullable field to `null`
   /// in [copyWith].
   static const Object absent = _sentinel;
+
+  @override
+  String toString() =>
+      'CallParticipant(id: $id, displayName: $displayName, '
+      'muted: $isMuted, cameraOff: $isCameraOff, '
+      'speaking: $isSpeaking, signal: ${signalStrength.name})';
 }
 
 const Object _sentinel = Object();

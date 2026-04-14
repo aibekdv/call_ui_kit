@@ -64,12 +64,15 @@ class SignalStrengthIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _SignalBarsPainter(
-        litBars: _litBars,
-        activeColor: _activeColor,
-        size: size,
+    return Semantics(
+      label: 'Signal: ${strength.name}',
+      child: CustomPaint(
+        size: Size(size, size),
+        painter: _SignalBarsPainter(
+          litBars: _litBars,
+          activeColor: _activeColor,
+          size: size,
+        ),
       ),
     );
   }

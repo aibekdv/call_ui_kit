@@ -103,4 +103,8 @@ class CallTheme {
       acceptCallColor: acceptCallColor ?? this.acceptCallColor,
     );
   }
+
+  @override
+  String toString() => 'CallTheme(background: $background, '
+      'endCallColor: $endCallColor, speakingColor: $speakingColor)';
 }

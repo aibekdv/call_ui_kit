@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../models/call_strings.dart';
 import '../../models/call_theme.dart';
 
 /// A rounded bar of circular control buttons (mute, camera, speaker, end call, etc.).
@@ -11,6 +12,7 @@ import '../../models/call_theme.dart';
 class CallBottomBar extends StatelessWidget {
   final double bottomPadding;
   final CallTheme theme;
+  final CallStrings strings;
   final bool isMuted;
   final bool isCameraOff;
   final bool isSpeakerOn;
@@ -27,6 +29,7 @@ class CallBottomBar extends StatelessWidget {
     super.key,
     this.bottomPadding = 0,
     required this.theme,
+    required this.strings,
     required this.isMuted,
     this.isCameraOff = false,
     required this.isSpeakerOn,
@@ -66,6 +69,7 @@ class CallBottomBar extends StatelessWidget {
                 backgroundColor: theme.buttonBackground,
                 size: 50,
                 onTap: onShowMore!,
+                semanticLabel: strings.moreOptions,
               ),
 
             // Screen share toggle
@@ -78,6 +82,7 @@ class CallBottomBar extends StatelessWidget {
                 backgroundColor: theme.buttonBackground,
                 size: 50,
                 onTap: onToggleScreenShare!,
+                semanticLabel: strings.shareScreen,
               ),
 
             // Video camera toggle
@@ -88,6 +93,7 @@ class CallBottomBar extends StatelessWidget {
                 backgroundColor: theme.buttonBackground,
                 size: 50,
                 onTap: onToggleCamera!,
+                semanticLabel: strings.camera,
               ),
 
             // Speaker
@@ -101,6 +107,7 @@ class CallBottomBar extends StatelessWidget {
                   : theme.buttonBackground,
               size: 50,
               onTap: onToggleSpeaker,
+              semanticLabel: strings.speaker,
             ),
 
             // Microphone
@@ -110,6 +117,7 @@ class CallBottomBar extends StatelessWidget {
               backgroundColor: theme.buttonBackground,
               size: 50,
               onTap: onToggleMute,
+              semanticLabel: isMuted ? strings.unmute : strings.mute,
             ),
 
             // End call
@@ -120,6 +128,7 @@ class CallBottomBar extends StatelessWidget {
               size: 58,
               iconSize: 26,
               onTap: onEndCall,
+              semanticLabel: strings.endCall,
             ),
           ],
         ),
@@ -135,20 +144,25 @@ class CallBottomBar extends StatelessWidget {
     required double size,
     double iconSize = 22,
     required VoidCallback onTap,
+    String? semanticLabel,
   }) {
-    return GestureDetector(
-      onTap: () {
-        onResetHideTimer();
-        onTap();
-      },
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          shape: BoxShape.circle,
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: GestureDetector(
+        onTap: () {
+          onResetHideTimer();
+          onTap();
+        },
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: iconColor, size: iconSize),
         ),
-        child: Icon(icon, color: iconColor, size: iconSize),
       ),
     );
   }
